@@ -20,6 +20,8 @@ export default defineComponent({
                 props.block.top = props.block.top - offsetHeight / 2; // 原则上重新派发事件
                 props.block.alignCenter = false; // 让渲染后的结果才能去居中
             }
+            props.block.width = offsetWidth
+            props.block.height = offsetHeight
         })
 
         return () => {
