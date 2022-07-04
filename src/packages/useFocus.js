@@ -1,9 +1,11 @@
-import {computed,ref} from 'vue'
+import {computed, ref} from 'vue'
 export function useFocus(data,callback){ // 获取哪些元素被选中了
-    
-    const selectIndex = ref(-1)//表示没有任何一个选中
-    const lastSelectBlock = computed(()=>data.value.blocks[selectIndex.value])//以最后一个为基准
-    
+
+    const selectIndex = ref(-1); // 表示没有任何一个被选中
+
+    // 最后选择的那一个
+    const lastSelectBlock = computed(()=>data.value.blocks[selectIndex.value])
+
     const focusData = computed(() => {
         let focus = [];
         let unfocused = [];
@@ -15,30 +17,25 @@ export function useFocus(data,callback){ // 获取哪些元素被选中了
     }
     const containerMousedown = () => {
         clearBlockFocus(); // 点击容器让选中的失去焦点
-        selectIndex.value = -1
+        selectIndex.value = -1;
     }
-    const blockMousedown = (e, block, index) => {
+    const blockMousedown = (e, block,index) => {
         e.preventDefault();
         e.stopPropagation();
         // block上我们规划一个属性 focus 获取焦点后就将focus变为true
         if (e.shiftKey) {
-            if(focusData.value.focus.length <= 1){
-                block.focus = true//当前只有一个选中时，按住shift键也不会切换状态
+            if(focusData.value.focus.length <=1) {
+                block.focus = true; // 当前只有一个节点被选中时 摁住shift键也不会切换focus状态
             }else{
                 block.focus = !block.focus;
             }
-            
         } else {
             if (!block.focus) {
                 clearBlockFocus();
                 block.focus = true; // 要清空其他人foucs属性
-            }
-            //当自己已经被选中了，再次点击时还是选中状态
-            // else {
-            //     block.focus = false;
-            // }
+            } // 当自己已经被选中了，在次点击时还是选中状态
         }
-        selectIndex.value = index
+        selectIndex.value = index;
         callback(e)
     }
     return {
