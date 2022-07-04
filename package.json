@@ -7,7 +7,10 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@vue/compiler-sfc": "^3.0.0",
     "core-js": "^3.8.3",
+    "deepcopy": "^2.1.0",
+    "element-plus": "^1.0.2-beta.70",
     "vue": "^3.2.13"
   },
   "devDependencies": {
