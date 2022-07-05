@@ -104,6 +104,11 @@
         border: 3px dashed red
     }
 }
+.editor-block-preview{
+    &::after{
+        display: none;
+    }
+}
 
 // 移动left值
 .line-x {
