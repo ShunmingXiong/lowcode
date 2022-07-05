@@ -7,6 +7,8 @@ import { useFocus } from "./useFocus";
 import { useBlockDragger } from "./useBlockDragger";
 import { useCommand } from "./useCommand";
 import { $dialog } from "@/components/Dialog";
+import { ElButton } from "element-plus";
+import { $dropdown, DropDownItem } from "@/components/DropDown";
 export default defineComponent({
     props: {
         modelValue: { type: Object }
@@ -15,10 +17,11 @@ export default defineComponent({
     setup(props, ctx) {
         //预览的时候，内容不能再操作了，可以点击输入内容
         const previewRef = ref(false)
-        
+        const editorRef = ref(true)
+
         const data = computed({
             get() {
-                return props.modelValue 
+                return props.modelValue
             },
             set(newValue) {
                 ctx.emit('update:modelValue', deepcopy(newValue))
@@ -36,49 +39,106 @@ export default defineComponent({
         const { dragstart, dragend } = useMenuDragger(containerRef, data);
 
         // 2.实现获取焦点 选中后可能直接就进行拖拽了
-        let { blockMousedown, focusData, containerMousedown, lastSelectBlock,clearBlockFocus } = useFocus(data, previewRef, (e) => {
+        let { blockMousedown, focusData, containerMousedown, lastSelectBlock, clearBlockFocus } = useFocus(data, previewRef, (e) => {
             // 获取焦点后进行拖拽
             mousedown(e)
         });
         // 2.实现组件拖拽
-        let { mousedown, markLine } = useBlockDragger(focusData, lastSelectBlock,data);
+        let { mousedown, markLine } = useBlockDragger(focusData, lastSelectBlock, data);
 
-        const {commands} = useCommand(data,focusData); // []
+        const { commands } = useCommand(data, focusData); // []
         const buttons = [
-            {label:'撤销', icon :'icon-back',handler:()=>commands.undo()},
-            {label:'重做', icon :'icon-forward',handler:()=>commands.redo()},
-            {label:'导出', icon :'icon-export',handler:()=>{
-                $dialog({
-                    title:'导出json使用',
-                    content:JSON.stringify(data.value),
-                })
-            }},
-            {label:'导入', icon :'icon-import',handler:()=>{
-                $dialog({
-                    title:'导入json使用',
-                    content:'',
-                    footer:true,
-                    onConfirm(text){
-                        // data.value = JSON.parse(text)//无法保留历史记录
-                        commands.updateContainer(JSON.parse(text))
-                    }
-                }) 
-            }},
-            {label:'置顶', icon :'icon-place-top',handler:()=>commands.placeTop()},
-            {label:'置底', icon :'icon-place-bottom',handler:()=>commands.placeBottom()},
-            {label:'删除', icon :'icon-delete',handler:()=>commands.delete()},
-            {label:()=>previewRef.value ? '编辑':'预览', icon :()=>previewRef.value ? 'icon-edit':'icon-browse',handler:()=>{
-                previewRef.value = !previewRef.value
-                clearBlockFocus()
-            }},
-        
+            { label: '撤销', icon: 'icon-back', handler: () => commands.undo() },
+            { label: '重做', icon: 'icon-forward', handler: () => commands.redo() },
+            {
+                label: '导出', icon: 'icon-export', handler: () => {
+                    $dialog({
+                        title: '导出json使用',
+                        content: JSON.stringify(data.value),
+                    })
+                }
+            },
+            {
+                label: '导入', icon: 'icon-import', handler: () => {
+                    $dialog({
+                        title: '导入json使用',
+                        content: '',
+                        footer: true,
+                        onConfirm(text) {
+                            // data.value = JSON.parse(text)//无法保留历史记录
+                            commands.updateContainer(JSON.parse(text))
+                        }
+                    })
+                }
+            },
+            { label: '置顶', icon: 'icon-place-top', handler: () => commands.placeTop() },
+            { label: '置底', icon: 'icon-place-bottom', handler: () => commands.placeBottom() },
+            { label: '删除', icon: 'icon-delete', handler: () => commands.delete() },
+            {
+                label: () => previewRef.value ? '编辑' : '预览', icon: () => previewRef.value ? 'icon-edit' : 'icon-browse', handler: () => {
+                    previewRef.value = !previewRef.value
+                    clearBlockFocus()
+                }
+            },
+            {
+                label: '关闭', icon: 'icon-close', handler: () => {
+                    editorRef.value = false
+                    clearBlockFocus()
+                }
+            },
+
         ];
 
+        const onContextMenuBlock = (e,block) => {
+            e.preventDefault()
+            $dropdown({
+                el:e.target,//以哪个元素为准
+                content:()=>{
+                    return <>
+                    <DropDownItem label="删除" icon="icon-delete" onClick={()=>commands.delete()}></DropDownItem>
+                    <DropDownItem label="置顶" icon="icon-place-top" onClick={()=>commands.placeTop()}></DropDownItem>
+                    <DropDownItem label="置底" icon="icon-place-bottom" onClick={()=>commands.placeBottom()}></DropDownItem>
+                    <DropDownItem label="查看" icon="icon-browse" onClick={()=>{
+                        $dialog({
+                            title:"查看节点内容",
+                            content:JSON.stringify(block)
+                        })
+                    }}></DropDownItem>
+                    <DropDownItem label="导入" icon="icon-import" onClick={()=>{
+                        $dialog({
+                            title: '导入节点数据',
+                            content: '',
+                            footer: true,
+                            onConfirm(text) {
+                                text = JSON.parse(text);
+                                commands.updateBlock(text, block)
+                            }
+                        })
+                    }}></DropDownItem>
+                </>
+                }
+            })
+        }
 
-       
 
 
-        return () => <div class="editor">
+
+        return () => !editorRef.value ? <>
+            <div
+                class="editor-container-canvas__content"
+                style={containerStyles.value}
+                style="margin:0"
+            >
+                {
+                    (data.value.blocks.map((block, index) => (
+                        <EditorBlock
+                            class={'editor-block-preview'}
+                            block={block}></EditorBlock>
+                    )))
+                }
+            </div>
+            <div><ElButton type="primary" onClick={()=>editorRef.value = true}>继续编辑</ElButton></div>
+        </> : <div class="editor">
             <div class="editor-left">
                 {/* 根据注册列表 渲染对应的内容  可以实现h5的拖拽*/}
                 {config.componentList.map(component => (
@@ -94,7 +154,7 @@ export default defineComponent({
                 ))}
             </div>
             <div class="editor-top">
-                {buttons.map((btn,index)=>{
+                {buttons.map((btn, index) => {
                     const icon = typeof btn.icon == 'function' ? btn.icon() : btn.icon
                     const label = typeof btn.label == 'function' ? btn.label() : btn.label
                     return <div class="editor-top-button" onClick={btn.handler}>
@@ -122,6 +182,7 @@ export default defineComponent({
                                     class={previewRef.value ? 'editor-block-preview' : ''}
                                     block={block}
                                     onMousedown={(e) => blockMousedown(e, block, index)}
+                                    onContextmenu={(e)=>onContextMenuBlock(e,block)}
                                 ></EditorBlock>
                             )))
                         }
