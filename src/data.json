@@ -1,11 +1,36 @@
 {
-    "container":{
-        "width":550,
-        "height":550
+    "container": {
+        "width": 550,
+        "height": 550
     },
-    "blocks":[
-        {"top":100,"left":100,"zIndex":1,"key":"text"},
-        {"top":200,"left":200,"zIndex":1,"key":"button"},
-        {"top":300,"left":300,"zIndex":1,"key":"input"}
+    "blocks": [
+        {
+            "top": 100,
+            "left": 100,
+            "zIndex": 1,
+            "key": "text",
+            "props":{
+                "text":"文字内容",
+                "color":"#ff0000"
+            }
+        },
+        {
+            "top": 200,
+            "left": 200,
+            "zIndex": 1,
+            "key": "button",
+            "props":{
+                "text":"按钮",
+                "type":"primary",
+                "size":"mini"
+            }
+        },
+        {
+            "top": 300,
+            "left": 300,
+            "zIndex": 1,
+            "key": "input",
+            "props":{}
+        }
     ]
 }
