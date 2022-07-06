@@ -145,3 +145,18 @@
     user-select: none;
     cursor: pointer;
 }
+
+.range{
+    display: inline-block;
+    width: 220px;
+    min-height: 30px;
+    align-items: center;
+    input{
+        width: 100%;
+        flex: 1;
+    }
+    span{
+        margin:0 4px;
+        display: inline-block;
+    }
+}

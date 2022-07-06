@@ -9,6 +9,7 @@ import { provide, ref } from 'vue'
 import data from './data.json'
 import Editor from './packages/editor'
 import {registerConfig as config} from './utils/editor-config'
+import Range from './components/Range'
 export default {
   components:{
     Editor
@@ -18,7 +19,9 @@ export default {
     provide('config',config)
     const formData = ref({
       username:'xsmxjg',
-      password:123
+      password:123,
+      start:0,
+      end:100
     })
     return {
       state,
