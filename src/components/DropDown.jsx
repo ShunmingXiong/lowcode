@@ -1,24 +1,24 @@
-import { computed, createVNode, defineComponent, inject, onBeforeUnmount, onMounted, provide, reactive, ref, render } from "vue";
+import { provide,inject, computed, createVNode, defineComponent, render,reactive, onMounted, ref, onBeforeUnmount } from "vue";
 
-export const DropDownItem = defineComponent({
+export const DropdownItem = defineComponent({
     props:{
         label:String,
         icon:String
     },
-    setup(peops){
-        let {label,icon} = peops
-        let hide = inject('hide')
-        return () => <div className="dropdown-item" onClick={hide}>
-            <i className={icon}></i>
+    setup(props){
+        let {label,icon} = props
+        let hide =  inject('hide')
+        return ()=><div class="dropdown-item" onClick ={hide}> 
+            <i class={icon}></i>
             <span>{label}</span>
         </div>
     }
 })
-
-const DropDownComponent = defineComponent({
+const DropdownComponent = defineComponent({
     props:{
-        option:{type:Object}
+        option:{type:Object},
     },
+
     setup(props,ctx){
         const state = reactive({
             option:props.option,
@@ -27,45 +27,42 @@ const DropDownComponent = defineComponent({
             left:0
         })
         ctx.expose({
-           showDropDown(option){
-                state.option = option
-                state.isShow = true
-                let {top,left,height} = option.el.getBoundingClientRect()
-                state.top = top + height
-                state.left = left
-            } 
-        })
-        provide('hide',()=>{
-            state.isShow = false
-        })
+            showDropdown(option){
+                state.option = option;
+                state.isShow = true;
+                let {top,left,height} =  option.el.getBoundingClientRect();
+                state.top = top + height;
+                state.left = left;
+            }
+        });
+        provide('hide',()=>state.isShow = false)
+        
         const classes = computed(()=>[
             'dropdown',
             {
-                'dropdown-isShow':state.isShow
+                'dropdown-isShow': state.isShow
             }
         ])
-
         const styles = computed(()=>({
             top:state.top+'px',
-            left:state.left+'px'
+            left:state.left + 'px'
         }))
-
         const el = ref(null)
-        const onMouseDownDocument = (e) => {
-            if(!el.value.contains(e.target)){//点击的是内容，什么也不做
-                state.isShow = false
+        const onMousedownDocument = (e)=>{
+            if(!el.value.contains(e.target)){ // 如果点击的是dropdown内部 什么都不做
+                state.isShow = false;
             }
         }
         onMounted(()=>{
-            //先捕获后冒泡
-            document.body.addEventListener('mousedown',onMouseDownDocument,true)
+            // 事件的传递行为是先捕获 在冒泡
+            // 之前为了阻止事件传播 我们给block 都增加了stopPropagation
+            document.body.addEventListener('mousedown',onMousedownDocument,true)
         })
 
         onBeforeUnmount(()=>{
-            document.body.removeEventListener('mousedown',onMouseDownDocument)
+            document.body.removeEventListener('mousedown',onMousedownDocument)
         })
-        
-        return () => {
+        return ()=>{
             return <div class={classes.value} style={styles.value} ref={el}>
                 {state.option.content()}
             </div>
@@ -73,18 +70,19 @@ const DropDownComponent = defineComponent({
     }
 })
 
-let vm
-export function $dropdown(option){
-    //element-plus是有dialog组件的
-    //手动挂载 new SubComponent.$mount
-    if(!vm){
-        let el = document.createElement("div")
-        vm = createVNode(DropDownComponent,{option})//将组件渲染成虚拟节点
-        document.body.appendChild((render(vm,el),el))//挂载到el上
-    }
-    
 
-    //将组件渲染到el元素上
-    let {showDropDown} = vm.component.exposed
-    showDropDown(option)
+let vm;
+export function $dropdown(option){
+    // element-plus中是有el-dialog组件 
+    // 手动挂载组件   new SubComponent.$mount()
+    if(!vm){
+        let el = document.createElement('div');
+        vm = createVNode(DropdownComponent,{option}); // 将组件渲染成虚拟节点
+    
+        // 这里需要将el 渲染到我们的页面中
+        document.body.appendChild((render(vm,el),el)) // 渲染成真实节点扔到页面中
+    }
+    // 将组件渲染到这个el元素上
+    let {showDropdown} = vm.component.exposed
+    showDropdown(option); // 其他说明组件已经有了只需要显示出来即可
 }

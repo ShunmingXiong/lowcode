@@ -1,12 +1,11 @@
-import { computed, defineComponent } from "vue";
-
+import { defineComponent,computed } from "vue";
 export default defineComponent({
-    props:{
-        start:{type:Number},
-        end:{type:Number}
+    props: {
+        start: { type: Number },
+        end: { type: Number }
     },
-    emits:['update:start','update:end'],
-    setup(props,ctx){
+    emits: ['update:start', 'update:end'],
+    setup(props, ctx) {
         const start = computed({
             get(){
                 return props.start
@@ -15,7 +14,6 @@ export default defineComponent({
                 ctx.emit('update:start',newValue)
             }
         })
-
         const end = computed({
             get(){
                 return props.end
@@ -24,9 +22,8 @@ export default defineComponent({
                 ctx.emit('update:end',newValue)
             }
         })
-
-        return ()=>{
-            return <div className="range">
+        return ()=> {
+            return <div class="range">
                 <input type="text" v-model={start.value} />
                 <span>~</span>
                 <input type="text" v-model={end.value} />
